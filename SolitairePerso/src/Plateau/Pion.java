@@ -1,11 +1,12 @@
 package Plateau;
 
+
 public class Pion 
 {
 
 	private double abs;
 	private double ord;
-	private String valeur;
+	private int valeur;
 
 	//UTILITE ???
 	public double getAbs()
@@ -19,11 +20,6 @@ public class Pion
 		return this.ord;
 	}
 	
-	public String getVal()
-	{
-		return valeur;
-	}
-
 	//UTILITE ???
 	public void setAbs(double abs)
 	{
@@ -36,7 +32,12 @@ public class Pion
 		this.ord = ord;
 	}
 	
-	public void setVal(String val)
+	public int getVal()
+	{
+		return valeur;
+	}
+
+	public void setVal(int val)
 	{
 		valeur = val;
 	}

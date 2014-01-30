@@ -8,17 +8,17 @@ public class Plateau extends Pion {
 	 */
 
 	private int dimensions;
-	String[][] plateau;
+	int[][] plateau;
 	private Pion bille = new Pion();
 	private int nbPions;
 	private int orDepart;
 	private int absDepart;
 	private int ordArriv;
 	private int absArriv;
-	private int typeDeplacement;
+	private String pion;
 
 	// RETOURNE LES DIMENSIONS DU TABLIER
-	public int getDimensions() 
+	public int getDimensions()
 	{
 		return dimensions;
 	}
@@ -77,18 +77,18 @@ public class Plateau extends Pion {
 		this.absArriv = absArriv;
 	}
 
-	// RETOURNE LE TYPE DE DEPLACEMENT
-	public int getTypeDeplacement()
+	public int getPlateau(int x, int y)
 	{
-		return typeDeplacement;
+		return plateau[x][y];
 	}
 
-	// DETERMINE LE TYPE DE DEPLACEMENT
-	public void setTypeDeplacement(int typeDeplacement)
+	// DETERMINE L'ABSCISSE D'ARRIVEE DU PION
+	public void setPlateau(int x, int y, int valeur)
 	{
-		this.typeDeplacement = typeDeplacement;
+		plateau[x][y] = valeur;
 	}
 
+	
 	// RETOURNE LE NOMBE DE PIONS PRESENTS SUR LE TABLIER
 	public int getNbPions()
 	{
@@ -100,26 +100,70 @@ public class Plateau extends Pion {
 	{
 		this.nbPions = nbPions;
 	}
-
-	// CREATION DU TABLIER (MATRICE)
-	public void Tablier()
+	
+	public String getPion()
 	{
-		plateau = new String[getDimensions()][getDimensions()];
+		return pion;
+	}
 
+	// DEFINIT LES CARACTERES A AFFICHER
+	public void setPion(String pion)
+	{
+		this.pion = pion;
+	}
+
+	// VERIFIFE QUE LA CASE CIBLE EST LIBRE ET QUE LA CASE INTERMEDIAIRE EST OCCUPEE
+	private boolean deplacePossible (int y, int x, int yinter, int xinter)
+	{
+		if ((plateau[y][x] != 1 && plateau[yinter][xinter] == 1))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	//
+	private boolean ecart ()
+	{
+		if ((getAbsArriv() - getAbsDepart() == 2 || getAbsArriv() - getAbsDepart() == -2) || (getOrArriv() - getOrDepart() == 2 || getOrArriv() - getOrDepart() == -2))
+		{
+			return true ;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	// CREATION DU TABLIER (MATRICE)
+	private void Tablier()
+	{
+		plateau = new int [getDimensions()][getDimensions()];
+		setPion("X ");
 		for (int i = 0; i < plateau.length; i++)
 		{
-			plateau[i] = new String[plateau.length];
+			plateau[i] = new int[plateau.length];
 		}
 	}
 
 	// AFFICHE LE TABLIER
-	public void affiche()
+	private void affiche()
 	{
 		for (int i = getDimensions() - 1; i >= 0; i--)
 		{
 			for (int j = 0; j < getDimensions(); j++)
 			{
-				System.out.print(plateau[i][j]);
+				if(plateau[i][j] == 1)
+				{
+					System.out.print(getPion());
+				}
+				else
+				{
+					System.out.print("  ");
+				}
 			}
 			System.out.println();
 		}
@@ -134,7 +178,7 @@ public class Plateau extends Pion {
 		{
 			for (int j = 0; j < getDimensions(); j++)
 			{
-				bille.setVal("X ");
+				bille.setVal(1);
 				plateau[i][j] = bille.getVal();
 
 				int milieuLigne = getDimensions() / 2;
@@ -143,9 +187,16 @@ public class Plateau extends Pion {
 				int milieuColonne = getDimensions() / 2;
 				milieuColonne = getDimensions() - milieuColonne;
 
-				plateau[milieuLigne - 1][milieuColonne - 1] = "  ";
+				plateau[milieuLigne - 1][milieuColonne - 1] = 0;
 
-				System.out.print(plateau[i][j]);
+				if(plateau[i][j] == 1)
+				{
+					System.out.print(getPion());
+				}
+				else
+				{
+					System.out.print("  ");
+				}
 			}
 			System.out.println();
 		}
@@ -156,8 +207,7 @@ public class Plateau extends Pion {
 	}
 
 	// DETERMINE LE TYPE DE DEPLACEMENET SELON LES COORDONNEES SAISIES
-	@SuppressWarnings("resource")
-	public int typeDeplacement() 
+	private void typeDeplacement() 
 	{
 		// SAISIE COORDONNEES PAR L'UTILISATEUR
 		Scanner sc = new Scanner(System.in);
@@ -181,31 +231,6 @@ public class Plateau extends Pion {
 		{
 			System.out.println("\nVous devez saisir un chiffre!\n");
 		}
-
-		if (getOrDepart() == getOrArriv() && getAbsArriv() > getAbsDepart())
-		{
-			// Déplacement horizontal vers la droite.
-			setTypeDeplacement(1);
-		}
-
-		if (getOrDepart() == getOrArriv() && getAbsArriv() < getAbsDepart())
-		{
-			// Déplacement horizontal vers la gauche.
-			setTypeDeplacement(2);
-		}
-
-		if (getOrDepart() > getOrArriv() && getAbsArriv() == getAbsDepart())
-		{
-			// Déplacement vertical vers le bas.
-			setTypeDeplacement(3);
-		}
-
-		if (getOrDepart() < getOrArriv() && getAbsArriv() == getAbsDepart())
-		{
-			// Déplacement vertical vers le haut.
-			setTypeDeplacement(4);
-		}
-		return getTypeDeplacement();
 	}
 
 	// EFFECTUE LE DEPLACEMENT VOULU PAR L'UTILISATEUR SELON LES REGLES DU JEU
@@ -217,80 +242,29 @@ public class Plateau extends Pion {
 			{
 				typeDeplacement();
 				
-				int ordInter = (ordArriv + orDepart) / 2;
-				int absInter = (absArriv + absDepart) / 2;
-
 				// RECUPERE LE TYPE DE DEPLACEMENT
 				// VERIFIE QUE LA CASE EST LIBRE
 				// VERIFIE QUE LE DEPLACEMENT NE DEPASSE PAS 2 CASES
 
-				if ((!plateau[ordArriv][absArriv].equals("X ") && plateau[ordInter][absInter].equals("X "))
-						&& (getTypeDeplacement() == 1)
-						&& (getAbsArriv() - getAbsDepart() == 2))
+				int ordInter = (ordArriv + orDepart) / 2;
+				int absInter = (absArriv + absDepart) / 2;
+				
+				if ((deplacePossible(getOrArriv(), getAbsArriv(), ordInter, absInter) == true) 
+						&& (ecart() == true))
 				{
 					// LA CASE CIBLE DEVIENT OCCUPEE
-					bille.setVal("X ");
-					plateau[ordArriv][absArriv] = bille.getVal();
+					bille.setVal(1);
+					setPlateau(ordArriv, absArriv, bille.getVal());
 
 					// LE PION MANGE DISPARAIT ET LA CASE DE DEPART EST VIDE
-					bille.setVal("  ");
-					plateau[orDepart][absDepart] = bille.getVal();
-					plateau[ordInter][absInter] = bille.getVal();
+					bille.setVal(0);
+					setPlateau(orDepart, absDepart, bille.getVal());
+					setPlateau(ordInter, absInter, bille.getVal());
+					
 					// MISE A JOUR DU NOMBRE DE PIONS RESTANTS
 					setNbPions(getNbPions() - 1);
 				}
-
-				if ((!plateau[ordArriv][absArriv].equals("X ") && plateau[ordInter][absInter].equals("X "))
-						&& (getTypeDeplacement() == 2)
-						&& (getAbsDepart() - getAbsArriv() == 2))
-				{
-					// LA CASE CIBLE DEVIENT OCCUPEE
-					bille.setVal("X ");
-					plateau[ordArriv][absArriv] = bille.getVal();
-
-					// LE PION MANGE DISPARAIT ET LA CASE DE DEPART EST VIDE
-					bille.setVal("  ");
-					plateau[orDepart][absDepart] = bille.getVal();
-					plateau[ordInter][absInter] = bille.getVal();
-
-					// MISE A JOUR DU NOMBRE DE PIONS RESTANTS
-					setNbPions(getNbPions() - 1);
-				}
-
-				if ((!plateau[ordArriv][absArriv].equals("X ") && plateau[ordInter][absInter].equals("X "))
-						&& (getTypeDeplacement() == 3)
-						&& (getOrDepart() - getOrArriv() == 2))
-				{
-					// LA CASE CIBLE DEVIENT OCCUPEE
-					bille.setVal("X ");
-					plateau[ordArriv][absArriv] = bille.getVal();
-
-					// LE PION MANGE DISPARAIT ET LA CASE DE DEPART EST VIDE
-					bille.setVal("  ");
-					plateau[orDepart][absDepart] = bille.getVal();
-					plateau[ordInter][absInter] = bille.getVal();
-
-					// MISE A JOUR DU NOMBRE DE PIONS RESTANTS
-					setNbPions(getNbPions() - 1);
-				}
-
-				if ((!plateau[ordArriv][absArriv].equals("X ") && plateau[ordInter][absInter].equals("X "))
-						&& (getTypeDeplacement() == 4)
-						&& (getOrArriv() - getOrDepart() == 2))
-				{
-					// LA CASE CIBLE DEVIENT OCCUPEE
-					bille.setVal("X ");
-					plateau[ordArriv][absArriv] = bille.getVal();
-
-					// LE PION MANGE DISPARAIT ET LA CASE DE DEPART EST VIDE
-					bille.setVal("  ");
-					plateau[orDepart][absDepart] = bille.getVal();
-					plateau[ordInter][absInter] = bille.getVal();
-
-					// MISE A JOUR DU NOMBRE DE PIONS RESTANTS
-					setNbPions(getNbPions() - 1);
-				}
-
+				
 				else 
 				{
 					System.out.println("\nDéplacement impossible\nRejouez\n");
